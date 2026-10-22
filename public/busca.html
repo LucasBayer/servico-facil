@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConectaServiços | Buscar Serviços</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/busca.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-container">
+    <a class="logo" href="index.html">📞 Conecta<strong>Serviços</strong></a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="index.html">Início</a></li>
+      <li><a class="nav-link active" href="busca.html">Buscar Serviços</a></li>
+      <li><a class="nav-link" href="historico.html">Meu Histórico</a></li>
+      <li><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+    </ul>
+    <div class="auth-actions" id="authArea"></div>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <h1>Buscar Prestadores de Serviço</h1>
+    <p>Filtre por cidade, profissão, preço ou popularidade.</p>
+  </div>
+
+  <div class="search-layout">
+    <aside class="filters">
+      <h3>Filtros</h3>
+
+      <label class="filter-label">Palavra-chave</label>
+      <input type="text" id="filterKeyword" placeholder="Nome ou serviço">
+
+      <label class="filter-label">Cidade</label>
+      <select id="filterCity">
+        <option value="">Todas</option>
+        <option>Camaquã</option>
+        <option>Sentinela do Sul</option>
+        <option>Tapes</option>
+        <option>Sertão Santana</option>
+      </select>
+
+      <label class="filter-label">Profissão</label>
+      <select id="filterProfession">
+        <option value="">Todas</option>
+      </select>
+
+      <label class="filter-label">Preço máximo: <span id="priceValue">R$ 500</span></label>
+      <input type="range" id="filterPrice" min="0" max="500" step="10" value="500">
+
+      <label class="filter-label">Ordenar por</label>
+      <select id="filterSort">
+        <option value="relevancia">Mais requisitados</option>
+        <option value="preco-asc">Menor preço</option>
+        <option value="preco-desc">Maior preço</option>
+        <option value="avaliacao">Melhor avaliados</option>
+      </select>
+
+      <button class="btn btn-secondary" id="clearFilters">Limpar filtros</button>
+    </aside>
+
+    <section class="results">
+      <div class="results__count" id="resultsCount"></div>
+      <div class="cards-grid" id="resultsGrid"></div>
+    </section>
+  </div>
+</main>
+
+<div class="modal hidden" id="providerModal">
+  <div class="modal__box">
+    <button class="modal__close" id="closeProviderModal">×</button>
+    <div id="providerModalContent"></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL</p>
+  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConectaServiços | Início</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-container">
+    <a class="logo" href="index.html">📞 Conecta<strong>Serviços</strong></a>
+    <ul class="nav-links">
+      <li><a class="nav-link active" href="index.html">Início</a></li>
+      <li><a class="nav-link" href="busca.html">Buscar Serviços</a></li>
+      <li><a class="nav-link" href="historico.html">Meu Histórico</a></li>
+      <li><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+    </ul>
+    <div class="auth-actions" id="authArea"></div>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero__content">
+      <h1>Encontre prestadores de serviço da sua cidade em segundos</h1>
+      <p>Um hub comunitário de divulgação de serviços — sem intermediar pagamentos, apenas conectando quem precisa a quem faz. Ideal para cidades como Camaquã, Sentinela do Sul, Tapes e Sertão Santana.</p>
+      <div class="hero__search">
+        <input type="text" id="heroSearchInput" placeholder="Qual serviço você procura? Ex: eletricista, professor particular...">
+        <select id="heroCitySelect">
+          <option value="">Todas as cidades</option>
+          <option>Camaquã</option>
+          <option>Sentinela do Sul</option>
+          <option>Tapes</option>
+          <option>Sertão Santana</option>
+        </select>
+        <button class="btn btn-accent" id="heroSearchBtn">Buscar</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Categorias mais procuradas</h2>
+    <div class="chip-row" id="categoryChips"></div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Prestadores em destaque</h2>
+    <div class="cards-grid" id="featuredGrid"></div>
+  </section>
+
+  <section class="section how-it-works">
+    <h2 class="section__title">Como funciona</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step__num">1</span>
+        <h3>Cadastre-se</h3>
+        <p>Crie sua conta como cliente ou prestador de serviço, é rápido e gratuito.</p>
+      </div>
+      <div class="step">
+        <span class="step__num">2</span>
+        <h3>Divulgue ou busque</h3>
+        <p>Prestadores adicionam seus dados, preços e fotos. Clientes buscam por cidade e profissão.</p>
+      </div>
+      <div class="step">
+        <span class="step__num">3</span>
+        <h3>Conecte-se</h3>
+        <p>Entre em contato direto pelos dados divulgados. Sem pagamentos pela plataforma.</p>
+      </div>
+      <div class="step">
+        <span class="step__num">4</span>
+        <h3>Avalie</h3>
+        <p>Após o serviço, avalie o prestador e ajude a fortalecer a comunidade.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="modal hidden" id="providerModal">
+  <div class="modal__box">
+    <button class="modal__close" id="closeProviderModal">×</button>
+    <div id="providerModalContent"></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL | Camaquã • Sentinela do Sul • Tapes • Sertão Santana</p>
+  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

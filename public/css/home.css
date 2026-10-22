@@ -1,0 +1,39 @@
+/* =============================================
+   HOME (index.html) — estilos exclusivos desta página
+============================================= */
+
+.hero{
+  background: linear-gradient(135deg, var(--secondary) 0%, #2a3540 100%);
+  color: var(--bg-dominant);
+  padding: 70px var(--space-6);
+  text-align:center;
+}
+.hero__content{ max-width: 780px; margin:0 auto; }
+.hero h1{ font-size: 2.1rem; margin-bottom: var(--space-3); }
+.hero p{ margin-bottom: var(--space-8); color: var(--bg-dominant-2); font-size:1.05rem; }
+.hero__search{
+  display:flex; gap: var(--space-2); flex-wrap:wrap; justify-content:center;
+  background: var(--bg-dominant); padding: var(--space-2); border-radius: var(--radius-md);
+}
+.hero__search input, .hero__search select{
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+  border:1px solid var(--bg-dominant-2); font-size:.95rem;
+}
+.hero__search input{ flex:1; min-width: 220px; }
+
+.chip-row{ display:flex; gap: var(--space-2); flex-wrap:wrap; }
+.chip{
+  background: var(--bg-dominant-2); color: var(--text-strong);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
+  font-size:.9rem; cursor:pointer; border:1px solid transparent; transition: var(--transition);
+}
+.chip:hover{ background: var(--accent); border-color: var(--secondary); }
+
+.how-it-works .steps{ display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: var(--space-6); }
+.step{ background: var(--bg-dominant-2); padding: var(--space-5); border-radius: var(--radius-md); text-align:center; }
+.step__num{
+  display:inline-block; background: var(--secondary); color: var(--bg-dominant);
+  width:34px; height:34px; line-height:34px; border-radius:50%; font-weight:700; margin-bottom: var(--space-2);
+}
+.step h3{ color: var(--secondary); margin-bottom: var(--space-1); }
+.step p{ font-size:.9rem; }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConectaServiços | Meu Histórico</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/historico.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-container">
+    <a class="logo" href="index.html">📞 Conecta<strong>Serviços</strong></a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="index.html">Início</a></li>
+      <li><a class="nav-link" href="busca.html">Buscar Serviços</a></li>
+      <li><a class="nav-link active" href="historico.html">Meu Histórico</a></li>
+      <li><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+    </ul>
+    <div class="auth-actions" id="authArea"></div>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <h1>Meu Histórico de Serviços</h1>
+    <p>Acompanhe os serviços que você já solicitou e avalie os prestadores.</p>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</main>
+
+<div class="modal hidden" id="reviewModal">
+  <div class="modal__box">
+    <button class="modal__close" id="closeReviewModal">×</button>
+    <h3>Avaliar serviço</h3>
+    <p id="reviewProviderName"></p>
+    <div class="star-input" id="starInput">
+      <span data-value="1">★</span>
+      <span data-value="2">★</span>
+      <span data-value="3">★</span>
+      <span data-value="4">★</span>
+      <span data-value="5">★</span>
+    </div>
+    <textarea id="reviewComment" rows="3" placeholder="Escreva um comentário sobre o serviço..."></textarea>
+    <button class="btn btn-accent btn-block" id="submitReview">Enviar avaliação</button>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL</p>
+  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

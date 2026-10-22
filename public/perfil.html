@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConectaServiços | Área do Prestador</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/perfil.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-container">
+    <a class="logo" href="index.html">📞 Conecta<strong>Serviços</strong></a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="index.html">Início</a></li>
+      <li><a class="nav-link" href="busca.html">Buscar Serviços</a></li>
+      <li><a class="nav-link" href="historico.html">Meu Histórico</a></li>
+      <li><a class="nav-link active" href="perfil.html">Área do Prestador</a></li>
+    </ul>
+    <div class="auth-actions" id="authArea"></div>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <h1>Área do Prestador</h1>
+    <p>Cadastre e gerencie os serviços que você divulga na plataforma.</p>
+  </div>
+
+  <div class="provider-layout">
+    <form class="provider-form" id="providerForm">
+      <h3>Adicionar / Editar Serviço</h3>
+
+      <label>Nome do prestador</label>
+      <input type="text" id="pNome" required placeholder="Ex: João da Silva">
+
+      <label>Profissão / Serviço</label>
+      <input type="text" id="pProfissao" required placeholder="Ex: Eletricista">
+
+      <label>Cidade</label>
+      <select id="pCidade" required>
+        <option value="">Selecione</option>
+        <option>Camaquã</option>
+        <option>Sentinela do Sul</option>
+        <option>Tapes</option>
+        <option>Sertão Santana</option>
+      </select>
+
+      <label>Preço médio (R$)</label>
+      <input type="number" id="pPreco" required min="0" placeholder="Ex: 80">
+
+      <label>Contato (WhatsApp/Telefone)</label>
+      <input type="text" id="pContato" required placeholder="(51) 9xxxx-xxxx">
+
+      <label>Descrição do serviço</label>
+      <textarea id="pDescricao" rows="3" placeholder="Descreva sua experiência e o que você oferece"></textarea>
+
+      <label>Foto de um trabalho (URL da imagem)</label>
+      <input type="text" id="pFoto" placeholder="https://... (opcional)">
+
+      <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">Publicar serviço</button>
+      <p class="form-msg" id="providerMsg"></p>
+    </form>
+
+    <div class="provider-preview">
+      <h3>Meus serviços publicados</h3>
+      <div class="cards-grid" id="myServicesGrid"></div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL</p>
+  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

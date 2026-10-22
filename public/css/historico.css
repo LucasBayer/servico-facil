@@ -1,0 +1,16 @@
+/* =============================================
+   HISTÓRICO (historico.html) — histórico de serviços do cliente
+============================================= */
+
+.history-list{ display:flex; flex-direction:column; gap: var(--space-3); }
+.history-item{
+  background:#fff; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  padding: var(--space-4) var(--space-5); display:flex; justify-content:space-between;
+  align-items:center; flex-wrap:wrap; gap: var(--space-3);
+}
+.history-item__info h4{ color: var(--secondary); }
+.history-item__info p{ font-size:.85rem; opacity:.85; }
+.status{ padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size:.78rem; font-weight:700; }
+.status--andamento{ background: var(--accent); color: var(--text-strong); }
+.status--concluido{ background: var(--bg-dominant-2); color: var(--text-strong); }
+.status--avaliado{ background: var(--secondary); color: var(--bg-dominant); }

@@ -1,0 +1,149 @@
+/* =============================================
+   CONECTA SERVIÇOS — CSS GLOBAL
+   Usado por TODAS as páginas (header, footer, botões, cards, modal)
+   Paleta — regra 60/30/10
+============================================= */
+:root{
+  --color-charcoal: #364652;
+  --color-onyx: #071108;
+  --color-thistle: #bfb1c1;
+  --color-pale-slate: #b5bec6;
+  --color-pale-sky: #c7dbe6;
+
+  --bg-dominant: var(--color-pale-sky);
+  --bg-dominant-2: var(--color-pale-slate);
+  --secondary: var(--color-charcoal);
+  --accent: var(--color-thistle);
+  --text-strong: var(--color-onyx);
+
+  --font-body: 'Segoe UI', Roboto, Arial, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-full: 999px;
+  --shadow-sm: 0 2px 8px rgba(7,17,8,0.10);
+  --shadow-md: 0 4px 14px rgba(7,17,8,0.14);
+  --transition: 180ms ease;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --content-wide: 1200px;
+}
+
+*,*::before,*::after{ box-sizing: border-box; margin:0; padding:0; }
+html{ scroll-behavior: smooth; }
+body{
+  font-family: var(--font-body);
+  background: var(--bg-dominant);
+  color: var(--text-strong);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+a{ color: inherit; text-decoration: none; }
+img{ max-width: 100%; display:block; }
+ul{ list-style:none; }
+button, input, select, textarea{ font: inherit; color: inherit; }
+.hidden{ display:none !important; }
+
+/* ---------- CONTAINER / SEÇÃO ---------- */
+.container{ max-width: var(--content-wide); margin-inline:auto; padding-inline: var(--space-6); }
+.page{ max-width: var(--content-wide); margin: 0 auto; padding: var(--space-10) var(--space-6); min-height: 60vh; }
+.page-header{ margin-bottom: var(--space-8); }
+.page-header h1{ color: var(--secondary); margin-bottom: var(--space-2); }
+.section{ max-width: var(--content-wide); margin:0 auto; padding: var(--space-10) var(--space-6); }
+.section__title{
+  font-size: 1.5rem; margin-bottom: var(--space-6); color: var(--secondary);
+  border-left: 5px solid var(--accent); padding-left: var(--space-3);
+}
+
+/* ---------- HEADER (30%) ---------- */
+.site-header{
+  background: var(--secondary); color: var(--bg-dominant);
+  position: sticky; top:0; z-index: 100; box-shadow: var(--shadow-md);
+}
+.nav-container{
+  max-width: var(--content-wide); margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: var(--space-4) var(--space-6); gap: var(--space-4); flex-wrap: wrap;
+}
+.logo{ display:flex; align-items:center; gap: var(--space-2); font-size:1.3rem; }
+.logo strong{ color: var(--accent); }
+.nav-links{ display:flex; gap: var(--space-2); flex-wrap:wrap; list-style:none; }
+.nav-link{
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+  color: var(--bg-dominant); font-size:.95rem; transition: background var(--transition), color var(--transition);
+}
+.nav-link:hover, .nav-link.active{ background: rgba(191,177,193,0.25); color: var(--accent); }
+.auth-actions{ display:flex; gap: var(--space-3); }
+.nav-toggle{ display:none; background:none; border:none; color: var(--bg-dominant); font-size:1.4rem; cursor:pointer; }
+
+@media (max-width: 900px){
+  .nav-links, .auth-actions{ display:none; width:100%; flex-direction:column; align-items:stretch; }
+  .nav-toggle{ display:block; }
+  .site-header.open .nav-links, .site-header.open .auth-actions{ display:flex; }
+}
+
+/* ---------- BOTÕES ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap: var(--space-2);
+  border:none; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-5);
+  font-size:.95rem; font-weight:600; cursor:pointer; transition: transform var(--transition), opacity var(--transition);
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn-accent{ background: var(--accent); color: var(--text-strong); }
+.btn-accent:hover{ opacity:.88; }
+.btn-secondary{ background: var(--bg-dominant-2); color: var(--text-strong); }
+.btn-ghost{ background: transparent; border:1px solid var(--bg-dominant); color: var(--bg-dominant); }
+.btn-ghost:hover{ background: rgba(199,219,230,0.15); }
+.btn-block{ width:100%; }
+.link-btn{ background:none; border:none; color: var(--secondary); text-decoration: underline; cursor:pointer; font-weight:600; }
+
+/* ---------- CARDS DE PRESTADOR (usado em várias páginas) ---------- */
+.cards-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: var(--space-5);
+}
+.card{
+  background:#fff; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--bg-dominant-2);
+}
+.card__photo{
+  height:140px; background: var(--bg-dominant-2); background-size:cover; background-position:center;
+  display:flex; align-items:center; justify-content:center; color: var(--secondary); font-size:2rem;
+}
+.card__body{ padding: var(--space-4); flex:1; display:flex; flex-direction:column; gap: var(--space-1); }
+.card__name{ font-size:1.05rem; color: var(--secondary); font-weight:700; }
+.card__profession{ font-size:.9rem; opacity:.8; }
+.card__city{ font-size:.85rem; color: var(--secondary); }
+.card__rating{ color: var(--accent); filter: brightness(.6); font-weight:700; }
+.card__price{ font-weight:800; font-size:1.05rem; margin-top:auto; }
+.card__actions{ display:flex; gap: var(--space-2); padding: 0 var(--space-4) var(--space-4); }
+.card__actions .btn{ flex:1; padding: var(--space-2) var(--space-3); font-size:.85rem; }
+
+/* ---------- MODAL (usado por várias páginas) ---------- */
+.modal{
+  position: fixed; inset:0; background: rgba(7,17,8,0.55);
+  display:flex; align-items:center; justify-content:center; z-index: 200;
+}
+.modal__box{
+  background:#fff; border-radius: var(--radius-md); padding: var(--space-6);
+  max-width: 420px; width:90%; position:relative; box-shadow: var(--shadow-md);
+}
+.modal__close{ position:absolute; top:10px; right:14px; background:none; border:none; font-size:1.4rem; cursor:pointer; color: var(--secondary); }
+.modal__box h3{ color: var(--secondary); margin-bottom: var(--space-2); }
+.star-input{ font-size:2rem; color: var(--bg-dominant-2); cursor:pointer; margin: var(--space-2) 0; }
+.star-input span.active{ color: var(--accent); filter: brightness(.6); }
+.modal__box textarea{
+  width:100%; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+  border:1px solid var(--bg-dominant-2); margin-bottom: var(--space-2);
+}
+
+/* ---------- FOOTER (30%) ---------- */
+.site-footer{
+  background: var(--secondary); color: var(--bg-dominant);
+  text-align:center; padding: var(--space-6); margin-top: var(--space-10); font-size:.85rem;
+}
+.site-footer .note{ opacity:.7; margin-top: var(--space-1); }
+
+/* ---------- MENSAGENS DE FORMULÁRIO ---------- */
+.form-msg{ margin-top: var(--space-2); font-size:.85rem; font-weight:600; min-height:1.2em; }
+.form-msg.success{ color:#2e7d32; }
+.form-msg.error{ color:#c62828; }
