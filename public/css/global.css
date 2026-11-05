@@ -147,3 +147,47 @@ button, input, select, textarea{ font: inherit; color: inherit; }
 .form-msg{ margin-top: var(--space-2); font-size:.85rem; font-weight:600; min-height:1.2em; }
 .form-msg.success{ color:#2e7d32; }
 .form-msg.error{ color:#c62828; }
+
+/* ---------- GRUPO DE CABECALHO (SAUDACAO + SAIR) ---------- */
+.auth-user-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.auth-user-greeting {
+  color: var(--bg-dominant);
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .auth-user-group {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-2) 0;
+  }
+}
+
+/* ---------- BADGES DE VISIBILIDADE / STATUS ---------- */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge--visivel {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.badge--oculto {
+  background: #ffebee;
+  color: #c62828;
+}

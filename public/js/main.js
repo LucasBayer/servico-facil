@@ -1,7 +1,6 @@
 /* =============================================
-   CONECTA SERVIÇOS — main.js
-   ÚNICO arquivo JS, compartilhado por TODAS as páginas.
-   Cada bloco só roda se os elementos daquela página existirem.
+   SERVIÇO FÁCIL — main.js
+   Gerenciamento de sessão, autenticação, perfis e anúncios.
 ============================================= */
 
 const API = '/api';
@@ -10,9 +9,10 @@ function lerUsuarioSalvo() {
   try {
     return JSON.parse(localStorage.getItem('cs_currentUser')) || null;
   } catch {
-    return null; // valor corrompido no localStorage
+    return null;
   }
 }
+
 let currentUser = lerUsuarioSalvo();
 
 /* ---------- SEGURANÇA: escape de HTML e URLs ---------- */
@@ -22,22 +22,22 @@ function escapeHtml(valor) {
   ));
 }
 
-// Aceita só http/https e neutraliza caracteres que poderiam sair de url('...') no CSS.
 function urlImagemSegura(valor) {
   if (!valor) return '';
   try {
     const u = new URL(valor);
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
-    return u.href.replace(/['"()\\\s]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
+    return u.href.replace(/['"()\\s]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
   } catch {
     return '';
   }
 }
 
-/* ---------- HELPER DE REQUISIÇÃO ---------- */
+/* ---------- HELPER DE REQUISIÇÃO (COM CREDENCIAIS DE SESSÃO) ---------- */
 async function api(path, options = {}) {
   const res = await fetch(API + path, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin', // Envia cookies de sessão HTTP-Only
     ...options,
   });
   const data = await res.json().catch(() => ({}));
@@ -57,17 +57,29 @@ if (navToggle) {
 function renderAuthArea() {
   const area = document.getElementById('authArea');
   if (!area) return;
+
   if (currentUser) {
     const primeiroNome = String(currentUser.nome || '').split(' ')[0];
     area.innerHTML = `
-      <span style="color:var(--bg-dominant); font-size:.9rem;">Olá, ${escapeHtml(primeiroNome)}</span>
-      <button class="btn btn-ghost" id="logoutBtn" type="button">Sair</button>
+      <div class="auth-user-group">
+        <span class="auth-user-greeting">Olá, ${escapeHtml(primeiroNome)}</span>
+        <button class="btn btn-ghost" id="logoutBtn" type="button">Sair</button>
+      </div>
     `;
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      currentUser = null;
-      localStorage.removeItem('cs_currentUser');
-      window.location.href = 'index.html';
-    });
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await api('/auth/logout', { method: 'POST' });
+        } catch (err) {
+          console.warn('Erro ao encerrar sessão:', err.message);
+        }
+        currentUser = null;
+        localStorage.removeItem('cs_currentUser');
+        window.location.href = 'index.html';
+      });
+    }
   } else {
     area.innerHTML = `
       <a class="btn btn-ghost" href="login.html">Entrar</a>
@@ -75,9 +87,27 @@ function renderAuthArea() {
     `;
   }
 }
-renderAuthArea();
 
-/* ---------- CARDS DE PRESTADOR ---------- */
+// Sincroniza sessão do servidor na inicialização
+async function sincronizarSessao() {
+  try {
+    const usuarioAtivo = await api('/auth/me');
+    if (usuarioAtivo) {
+      currentUser = usuarioAtivo;
+      localStorage.setItem('cs_currentUser', JSON.stringify(currentUser));
+    } else {
+      currentUser = null;
+      localStorage.removeItem('cs_currentUser');
+    }
+  } catch {
+    currentUser = null;
+    localStorage.removeItem('cs_currentUser');
+  }
+  renderAuthArea();
+}
+sincronizarSessao();
+
+/* ---------- CARDS E RATINGS ---------- */
 function starsHtml(rating) {
   const full = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
   return '★'.repeat(full) + '☆'.repeat(5 - full);
@@ -100,7 +130,7 @@ function cardTemplate(p) {
       <div class="card__profession">${escapeHtml(p.profissao)}</div>
       <div class="card__city">📍 ${escapeHtml(p.cidade)}</div>
       <div class="card__rating">${ratingHtml(p.rating, p.avaliacoes)}</div>
-      <div class="card__price">R$ ${Number(p.preco).toFixed(2)}</div>
+      <div class="card__price">R$ ${Number(p.preco || 0).toFixed(2)}</div>
     </div>
     <div class="card__actions">
       <button type="button" class="btn btn-secondary" data-action="ver-perfil" data-id="${id}">Ver perfil</button>
@@ -111,11 +141,10 @@ function cardTemplate(p) {
 }
 
 function contatarPrestador(prestadorId, contato, servico) {
-  // Registra no histórico em segundo plano; abrir o WhatsApp logo evita bloqueio de pop-up.
   if (currentUser) {
     api('/historico', {
       method: 'POST',
-      body: JSON.stringify({ usuario_id: currentUser.id, prestador_id: prestadorId, servico }),
+      body: JSON.stringify({ prestador_id: prestadorId, servico }),
     }).catch((err) => console.warn('Não foi possível registrar no histórico:', err.message));
   }
   const digitos = String(contato || '').replace(/\D/g, '');
@@ -124,7 +153,6 @@ function contatarPrestador(prestadorId, contato, servico) {
 }
 
 /* ---------- MODAL DE PERFIL DO PRESTADOR ---------- */
-// Cria o modal sob demanda, então ele também funciona em páginas que não o têm no HTML (ex.: perfil.html).
 function getProviderModal() {
   let modal = document.getElementById('providerModal');
   if (!modal) {
@@ -132,7 +160,7 @@ function getProviderModal() {
     modal.className = 'modal hidden';
     modal.id = 'providerModal';
     modal.innerHTML = `
-      <div class="modal__box">
+      <div class="modal__box" style="max-width:550px;">
         <button class="modal__close" id="closeProviderModal" type="button">×</button>
         <div id="providerModalContent"></div>
       </div>`;
@@ -145,22 +173,39 @@ async function openProviderModal(id) {
   const modal = getProviderModal();
   try {
     const p = await api(`/prestadores/${id}`);
-    const comentariosHtml = p.comentarios.length
+    const comentariosHtml = p.comentarios && p.comentarios.length
       ? p.comentarios.map((c) => `
           <p style="margin-top:8px;"><strong>${escapeHtml(c.autor)}</strong>: ${starsHtml(c.nota)}<br>${escapeHtml(c.comentario || '')}</p>`).join('')
       : '<p style="opacity:.7;">Ainda sem comentários.</p>';
+
+    const anunciosHtml = p.anuncios && p.anuncios.length
+      ? p.anuncios.map((an) => `
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-top:8px;">
+            <strong>${escapeHtml(an.titulo)}</strong> <span style="font-size:0.8rem; color:#0284c7;">(${escapeHtml(an.categoria)})</span>
+            <p style="font-size:0.85rem; margin:4px 0;">${escapeHtml(an.descricao)}</p>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b;">
+              <span>📍 ${escapeHtml(an.regiao)}</span>
+              <span>${an.preco ? 'R$ ' + Number(an.preco).toFixed(2) : 'A combinar'}</span>
+            </div>
+          </div>`).join('')
+      : '<p style="opacity:.7;">Nenhum anúncio avulso ativo no momento.</p>';
 
     document.getElementById('providerModalContent').innerHTML = `
       <h3>${escapeHtml(p.nome)}</h3>
       <p><strong>${escapeHtml(p.profissao)}</strong> · ${escapeHtml(p.cidade)}</p>
       <p class="card__rating">${ratingHtml(p.rating, p.avaliacoes)}</p>
       <p style="margin:12px 0;">${escapeHtml(p.descricao || 'Sem descrição informada.')}</p>
-      <p><strong>Preço médio:</strong> R$ ${Number(p.preco).toFixed(2)}</p>
+      <p><strong>Preço de referência:</strong> R$ ${Number(p.preco || 0).toFixed(2)}</p>
       <p><strong>Contato:</strong> ${escapeHtml(p.contato)}</p>
       <button type="button" class="btn btn-accent btn-block" data-action="contatar" data-id="${Number(p.id)}"
-        data-contato="${escapeHtml(p.contato)}" data-servico="${escapeHtml(p.profissao)}">Chamar no WhatsApp</button>
+        data-contato="${escapeHtml(p.contato)}" data-servico="${escapeHtml(p.profissao)}" style="margin-top:10px;">Chamar no WhatsApp</button>
+      
       <hr style="margin:14px 0;">
-      <h4>Avaliações</h4>
+      <h4>Serviços e Anúncios Oferecidos</h4>
+      ${anunciosHtml}
+
+      <hr style="margin:14px 0;">
+      <h4>Avaliações de Clientes</h4>
       ${comentariosHtml}
     `;
     modal.classList.remove('hidden');
@@ -169,7 +214,7 @@ async function openProviderModal(id) {
   }
 }
 
-/* ---------- CLIQUES GLOBAIS (substitui os onclick inline) ---------- */
+/* ---------- CLIQUES GLOBAIS ---------- */
 document.addEventListener('click', (e) => {
   const modal = document.getElementById('providerModal');
   if (modal && (e.target.id === 'closeProviderModal' || e.target === modal)) {
@@ -224,7 +269,7 @@ if (featuredGrid) {
 const resultsGrid = document.getElementById('resultsGrid');
 if (resultsGrid) {
   const urlParams = new URLSearchParams(window.location.search);
-  let sequencia = 0; // descarta respostas antigas se o usuário digitar rápido
+  let sequencia = 0;
   let timer = null;
 
   async function populateProfessionFilter() {
@@ -306,7 +351,9 @@ if (loginForm) {
       localStorage.setItem('cs_currentUser', JSON.stringify(currentUser));
       msg.className = 'form-msg success';
       msg.textContent = 'Login realizado com sucesso! Redirecionando...';
-      setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      setTimeout(() => {
+        window.location.href = usuario.tipo === 'prestador' ? 'perfil.html' : 'index.html';
+      }, 700);
     } catch (err) {
       msg.className = 'form-msg error';
       msg.textContent = err.message;
@@ -337,7 +384,9 @@ if (registerForm) {
       localStorage.setItem('cs_currentUser', JSON.stringify(currentUser));
       msg.className = 'form-msg success';
       msg.textContent = 'Cadastro realizado com sucesso!';
-      setTimeout(() => { window.location.href = tipo === 'prestador' ? 'perfil.html' : 'index.html'; }, 800);
+      setTimeout(() => {
+        window.location.href = tipo === 'prestador' ? 'perfil.html' : 'index.html';
+      }, 700);
     } catch (err) {
       msg.className = 'form-msg error';
       msg.textContent = err.message;
@@ -346,61 +395,224 @@ if (registerForm) {
 }
 
 /* =========================================================
-   PÁGINA: perfil.html
+   PÁGINA: perfil.html (ÁREA DO PRESTADOR E ANÚNCIOS)
 ========================================================= */
-const providerForm = document.getElementById('providerForm');
-if (providerForm) {
-  async function renderMyServices() {
-    const grid = document.getElementById('myServicesGrid');
-    if (!currentUser) {
-      grid.innerHTML = '<p>Faça login para ver seus serviços publicados.</p>';
-      return;
-    }
+const providerMainLayout = document.getElementById('providerMainLayout');
+if (providerMainLayout) {
+  let meusAnunciosList = [];
+
+  async function inicializarAreaPrestador() {
     try {
-      const meus = await api(`/prestadores/usuario/${currentUser.id}`);
-      grid.innerHTML = meus.length
-        ? meus.map((p) => cardTemplate({ ...p, rating: 0, avaliacoes: 0 })).join('')
-        : '<p>Você ainda não publicou nenhum serviço.</p>';
+      const me = await api('/auth/me');
+      if (!me) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = me;
+      localStorage.setItem('cs_currentUser', JSON.stringify(currentUser));
+
+      if (currentUser.tipo !== 'prestador' && currentUser.tipo !== 'admin') {
+        document.getElementById('notProviderWarning').classList.remove('hidden');
+        providerMainLayout.classList.add('hidden');
+        return;
+      }
+
+      // Carrega dados completos do perfil
+      const perfilCompleto = await api('/perfil');
+      document.getElementById('profNome').value = perfilCompleto.nome || '';
+      document.getElementById('profCidade').value = perfilCompleto.cidade || '';
+      document.getElementById('profContato').value = perfilCompleto.telefone || '';
+      if (perfilCompleto.perfilPrestador) {
+        document.getElementById('profEspecialidades').value = perfilCompleto.perfilPrestador.profissao || '';
+        document.getElementById('profDescricao').value = perfilCompleto.perfilPrestador.descricao || '';
+      }
+
+      // Preenche os dados de identificação somente-leitura do formulário de anúncio
+      document.getElementById('adPrestadorNome').value = perfilCompleto.nome + ' (' + (perfilCompleto.cidade || 'Região') + ')';
+
+      await carregarMeusAnuncios();
     } catch (err) {
-      grid.innerHTML = `<p>Erro: ${escapeHtml(err.message)}</p>`;
+      console.error('Erro ao inicializar área do prestador:', err);
     }
   }
 
-  providerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const msg = document.getElementById('providerMsg');
-    if (!currentUser) {
-      msg.className = 'form-msg error';
-      msg.textContent = 'Você precisa estar logado para publicar um serviço.';
+  async function carregarMeusAnuncios() {
+    try {
+      meusAnunciosList = await api('/anuncios/meus');
+      renderizarMeusAnuncios(meusAnunciosList);
+    } catch (err) {
+      document.getElementById('myAdsGrid').innerHTML = `<p class="form-msg error">Erro ao carregar anúncios: ${escapeHtml(err.message)}</p>`;
+    }
+  }
+
+  function renderizarMeusAnuncios(anuncios) {
+    const grid = document.getElementById('myAdsGrid');
+    const badge = document.getElementById('adCountBadge');
+    badge.textContent = `(${anuncios.length} cadastrado${anuncios.length === 1 ? '' : 's'})`;
+
+    if (!anuncios || anuncios.length === 0) {
+      grid.innerHTML = '<p style="color:#64748b;">Você ainda não cadastrou nenhum anúncio de serviço. Utilize o formulário ao lado para publicar sua primeira oferta!</p>';
       return;
     }
+
+    grid.innerHTML = anuncios.map((an) => {
+      const isVisivel = an.visivel === true;
+      const statusBadge = isVisivel
+        ? '<span class="badge badge--visivel">Visível na Busca</span>'
+        : '<span class="badge badge--oculto">Oculto</span>';
+      
+      const precoFmt = an.preco ? `R$ ${Number(an.preco).toFixed(2)}` : 'A combinar';
+
+      return `
+        <div class="ad-card ${isVisivel ? '' : 'ad-card--hidden'}" id="ad-card-${an.id}">
+          <div class="ad-card__header">
+            <div>
+              <div class="ad-card__title">${escapeHtml(an.titulo)}</div>
+              <div class="ad-card__category">${escapeHtml(an.categoria)}</div>
+            </div>
+            ${statusBadge}
+          </div>
+          <p class="ad-card__desc">${escapeHtml(an.descricao)}</p>
+          <div class="ad-card__meta">
+            <span>📍 ${escapeHtml(an.regiao)}</span>
+            <span class="ad-card__price">${precoFmt}</span>
+          </div>
+          <div class="ad-card__actions">
+            <button type="button" class="btn btn-secondary" onclick="alternarVisibilidadeAnuncio(${an.id}, ${isVisivel})">
+              ${isVisivel ? '👁️ Ocultar' : '👁️ Mostrar'}
+            </button>
+            <button type="button" class="btn btn-ghost" style="color:var(--secondary); border-color:var(--bg-dominant-2);" onclick="editarAnuncio(${an.id})">
+              ✏️ Editar
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Alternar visibilidade do anúncio (Ocultar / Mostrar)
+  window.alternarVisibilidadeAnuncio = async function(id, statusAtual) {
+    try {
+      await api(`/anuncios/${id}/visibilidade`, {
+        method: 'PUT',
+        body: JSON.stringify({ visivel: !statusAtual }),
+      });
+      await carregarMeusAnuncios();
+    } catch (err) {
+      alert('Erro ao alterar visibilidade: ' + err.message);
+    }
+  };
+
+  // Carregar dados para edição
+  window.editarAnuncio = function(id) {
+    const an = meusAnunciosList.find((item) => item.id === id);
+    if (!an) return;
+
+    document.getElementById('adFormTitle').textContent = 'Editar Anúncio de Serviço';
+    document.getElementById('adTitulo').value = an.titulo;
+    document.getElementById('adCategoria').value = an.categoria;
+    document.getElementById('adRegiao').value = an.regiao;
+    document.getElementById('adPreco').value = an.preco || '';
+    document.getElementById('adDescricao').value = an.descricao;
+    document.getElementById('adFoto').value = an.foto_url || '';
+    document.getElementById('adEditId').value = an.id;
+
+    document.getElementById('adSubmitBtn').textContent = 'Salvar Alterações';
+    document.getElementById('adCancelEditBtn').classList.remove('hidden');
+    document.getElementById('adTitulo').focus();
+  };
+
+  // Cancelar edição
+  document.getElementById('adCancelEditBtn').addEventListener('click', () => {
+    document.getElementById('adForm').reset();
+    document.getElementById('adEditId').value = '';
+    document.getElementById('adFormTitle').textContent = 'Publicar Novo Anúncio de Serviço';
+    document.getElementById('adSubmitBtn').textContent = 'Publicar Anúncio';
+    document.getElementById('adCancelEditBtn').classList.add('hidden');
+    document.getElementById('adPrestadorNome').value = currentUser.nome;
+  });
+
+  // Salvar perfil do prestador
+  document.getElementById('myProfileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('profileMsg');
     const payload = {
-      usuario_id: currentUser.id,
-      nome: document.getElementById('pNome').value,
-      profissao: document.getElementById('pProfissao').value,
-      cidade: document.getElementById('pCidade').value,
-      preco: Number(document.getElementById('pPreco').value),
-      contato: document.getElementById('pContato').value,
-      descricao: document.getElementById('pDescricao').value,
-      foto_url: document.getElementById('pFoto').value,
+      nome: document.getElementById('profNome').value,
+      cidade: document.getElementById('profCidade').value,
+      telefone: document.getElementById('profContato').value,
+      profissao: document.getElementById('profEspecialidades').value,
+      descricao: document.getElementById('profDescricao').value,
     };
     try {
-      await api('/prestadores', { method: 'POST', body: JSON.stringify(payload) });
+      const atualizado = await api('/perfil', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      currentUser = atualizado;
+      localStorage.setItem('cs_currentUser', JSON.stringify(currentUser));
+      document.getElementById('adPrestadorNome').value = atualizado.nome + ' (' + (atualizado.cidade || '') + ')';
+      renderAuthArea();
+
       msg.className = 'form-msg success';
-      msg.textContent = 'Serviço publicado com sucesso!';
-      providerForm.reset();
-      renderMyServices();
+      msg.textContent = 'Perfil profissional atualizado com sucesso!';
+      setTimeout(() => { msg.textContent = ''; }, 3500);
     } catch (err) {
       msg.className = 'form-msg error';
       msg.textContent = err.message;
     }
   });
 
-  renderMyServices();
+  // Publicar ou editar anúncio
+  document.getElementById('adForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('adMsg');
+    const editId = document.getElementById('adEditId').value;
+    const payload = {
+      titulo: document.getElementById('adTitulo').value,
+      categoria: document.getElementById('adCategoria').value,
+      regiao: document.getElementById('adRegiao').value,
+      preco: document.getElementById('adPreco').value ? Number(document.getElementById('adPreco').value) : null,
+      descricao: document.getElementById('adDescricao').value,
+      foto_url: document.getElementById('adFoto').value,
+    };
+
+    try {
+      if (editId) {
+        await api(`/anuncios/${editId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        msg.className = 'form-msg success';
+        msg.textContent = 'Anúncio atualizado com sucesso!';
+      } else {
+        await api('/anuncios', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        msg.className = 'form-msg success';
+        msg.textContent = 'Anúncio publicado com sucesso!';
+      }
+
+      document.getElementById('adForm').reset();
+      document.getElementById('adEditId').value = '';
+      document.getElementById('adFormTitle').textContent = 'Publicar Novo Anúncio de Serviço';
+      document.getElementById('adSubmitBtn').textContent = 'Publicar Anúncio';
+      document.getElementById('adCancelEditBtn').classList.add('hidden');
+      document.getElementById('adPrestadorNome').value = currentUser.nome;
+
+      await carregarMeusAnuncios();
+      setTimeout(() => { msg.textContent = ''; }, 3500);
+    } catch (err) {
+      msg.className = 'form-msg error';
+      msg.textContent = err.message;
+    }
+  });
+
+  inicializarAreaPrestador();
 }
 
 /* =========================================================
-   PÁGINA: historico.html
+   PÁGINA: historico.html (PRESERVADA E SESSÃO SEGURA)
 ========================================================= */
 const historyList = document.getElementById('historyList');
 if (historyList) {
@@ -461,7 +673,7 @@ if (historyList) {
       try {
         await api(`/historico/${Number(d.id)}/status`, {
           method: 'PUT',
-          body: JSON.stringify({ status: 'concluido', usuario_id: currentUser.id }),
+          body: JSON.stringify({ status: 'concluido' }),
         });
         renderHistory();
       } catch (err) {
@@ -470,8 +682,11 @@ if (historyList) {
     }
   });
 
-  document.getElementById('closeReviewModal').addEventListener('click', () =>
-    document.getElementById('reviewModal').classList.add('hidden'));
+  const closeReviewModalBtn = document.getElementById('closeReviewModal');
+  if (closeReviewModalBtn) {
+    closeReviewModalBtn.addEventListener('click', () =>
+      document.getElementById('reviewModal').classList.add('hidden'));
+  }
 
   document.querySelectorAll('#starInput span').forEach((star) => {
     star.addEventListener('click', () => {
@@ -481,30 +696,32 @@ if (historyList) {
     });
   });
 
-  document.getElementById('submitReview').addEventListener('click', async (e) => {
-    if (!currentUser) return;
-    if (!selectedStars) { alert('Selecione uma nota de 1 a 5 estrelas.'); return; }
-    const botao = e.currentTarget;
-    botao.disabled = true; // evita envio duplo
-    try {
-      await api('/avaliacoes', {
-        method: 'POST',
-        body: JSON.stringify({
-          prestador_id: reviewTargetProviderId,
-          usuario_id: currentUser.id,
-          nota: selectedStars,
-          comentario: document.getElementById('reviewComment').value,
-          historico_id: reviewTargetHistoryId,
-        }),
-      });
-      document.getElementById('reviewModal').classList.add('hidden');
-      renderHistory();
-    } catch (err) {
-      alert('Erro ao enviar avaliação: ' + err.message);
-    } finally {
-      botao.disabled = false;
-    }
-  });
+  const submitReviewBtn = document.getElementById('submitReview');
+  if (submitReviewBtn) {
+    submitReviewBtn.addEventListener('click', async (e) => {
+      if (!currentUser) return;
+      if (!selectedStars) { alert('Selecione uma nota de 1 a 5 estrelas.'); return; }
+      const botao = e.currentTarget;
+      botao.disabled = true;
+      try {
+        await api('/avaliacoes', {
+          method: 'POST',
+          body: JSON.stringify({
+            prestador_id: reviewTargetProviderId,
+            historico_id: reviewTargetHistoryId,
+            nota: selectedStars,
+            comentario: document.getElementById('reviewComment').value,
+          }),
+        });
+        document.getElementById('reviewModal').classList.add('hidden');
+        renderHistory();
+      } catch (err) {
+        alert('Erro ao enviar avaliação: ' + err.message);
+      } finally {
+        botao.disabled = false;
+      }
+    });
+  }
 
   renderHistory();
 }
