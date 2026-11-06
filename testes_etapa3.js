@@ -1,0 +1,103 @@
+// Executar em banco descartável preparado com o schema.sql consolidado.
+const assert = require('node:assert/strict');
+const { once } = require('node:events');
+const { spawn } = require('node:child_process');
+const { randomUUID } = require('node:crypto');
+const bcrypt = require('bcryptjs');
+const pool = require('./db');
+const senha = randomUUID();
+const prefixo = randomUUID();
+let total = 0;
+async function executar() {
+  assert.match(process.env.PGDATABASE, /(?:teste|test|_qa)(?:_|$)/i, 'Use um banco de teste');
+  const porta = 3187;
+  const servidor = spawn(process.execPath,['server.js'],{cwd:__dirname,env:{...process.env,PORT:String(porta),CONTATO_ADMIN_EMAIL:'qa@example.test'},stdio:['ignore','pipe','inherit']});
+  const iniciado = once(servidor.stdout,'data');
+  try {
+    await Promise.race([iniciado,once(servidor,'exit').then(()=>{throw Error('Servidor encerrou');})]);
+    async function req(metodo,rota,status,cookie,body) {
+      const r = await fetch('http://localhost:'+porta+rota,{method:metodo,headers:{'Content-Type':'application/json',cookie:cookie || ''},body:body && JSON.stringify(body)});
+      const data = r.headers.get('content-type')?.includes('application/json') ? await r.json() : await r.text();
+      assert.equal(r.status,status,metodo+' '+rota+' '+JSON.stringify(data).slice(0,180));
+      total++;
+      return {data,cookie:r.headers.get('set-cookie')?.split(';')[0]};
+    }
+    const email = tipo => tipo+'-'+prefixo+'@example.test';
+    async function cadastrar(tipo,sufixo=tipo) {
+      return req('POST','/api/auth/register',201,null,{tipo,nome:'Pessoa Teste',email:email(sufixo),senha,cidade:'Tapes',telefone:'51999990000'});
+    }
+    await pool.query("INSERT INTO usuarios(nome,email,senha_hash,tipo) VALUES('Teste admin',$1,$2,'admin')",[email('admin'),await bcrypt.hash(senha,10)]);
+    const {cookie:admin} = await req('POST','/api/auth/login',200,null,{email:email('admin'),senha});
+    const cliente = await cadastrar('cliente');
+    const outro = await cadastrar('cliente','outro');
+    const prest = await cadastrar('prestador');
+    const p = (await req('GET','/api/perfil',200,prest.cookie)).data.perfilPrestador.id;
+    const ad = (await req('POST','/api/anuncios',201,prest.cookie,{titulo:'Oferta',descricao:'Descrição pública',categoria:'Teste',regiao:'Tapes'})).data.id;
+    const pedido = {tipo:'direcionada',anuncio_id:ad,cidade:'Tapes',descricao:'Descrição privada',titulo:'Título privado'};
+    const ordem = (await req('POST','/api/ordens',201,cliente.cookie,pedido)).data.id;
+    const put = (rota,body,status=200,cookie=admin)=>req('PUT',rota,status,cookie,body);
+    const motivo = 'Revisão solicitada';
+    const conta = '/api/admin/usuarios/'+prest.data.id+'/status';
+    const perfil = '/api/admin/prestadores/'+p+'/visibilidade';
+    const anuncio = '/api/admin/anuncios/'+ad+'/moderacao';
+    const vis = '/api/anuncios/'+ad+'/visibilidade';
+    const rota = '/api/ordens/'+ordem;
+    await req('GET','/admin.html',401);
+    await req('GET','/admin.html',403,cliente.cookie);
+    await req('GET','/admin.html',200,admin);
+    await req('GET','/api/admin/painel',403,prest.cookie);
+    await req('GET',rota,403,outro.cookie);
+    await put(anuncio,{oculto_admin:true,motivo},403,prest.cookie);
+    await put(anuncio,{oculto_admin:true},400);
+    await put(anuncio,{oculto_admin:true,motivo});
+    await req('GET','/api/anuncios/'+ad,404);
+    await req('POST','/api/ordens',400,cliente.cookie,pedido);
+    await put(rota+'/aceitar',{},400,prest.cookie);
+    await put(vis,{visivel:false},200,prest.cookie);
+    await put(anuncio,{oculto_admin:false,motivo});
+    await req('GET','/api/anuncios/'+ad,404);
+    await put(vis,{visivel:true},200,prest.cookie);
+    await put(perfil,{visivel:false,motivo});
+    await put(conta,{ativo:false,motivo});
+    await req('GET','/api/anuncios/meus',403,prest.cookie);
+    const painel = (await req('GET','/api/admin/painel',200,admin)).data;
+    assert(painel.ordens.some(o=>o.id===ordem && o.status==='aguardando_resposta'));
+    await put(conta,{ativo:true,motivo});
+    await req('GET','/api/prestadores/'+p,404);
+    await req('GET','/api/anuncios/'+ad,404);
+    await put(perfil,{visivel:true,motivo});
+    const {cookie:ativo} = await req('POST','/api/auth/login',200,null,{email:email('prestador'),senha});
+    await put(rota+'/aceitar',{},200,ativo);
+    const escopo = '/api/admin/ordens/'+ordem+'/escopo';
+    await put(escopo,{titulo:'Alterado'},400);
+    await put(escopo,{status:'concluida',motivo},400);
+    const ajuste = (await put(escopo,{titulo:'Alterado',motivo})).data;
+    assert.equal(ajuste.status,'aceita');
+    assert.equal(ajuste.prestador_responsavel_id,p);
+    assert.equal(ajuste.cliente_id,cliente.data.id);
+    await put(rota+'/cancelar',{},400);
+    await put(rota+'/cancelar',{motivo});
+    await put(conta,{ativo:false,motivo});
+    await put(conta,{ativo:true,motivo});
+    assert.equal((await req('GET',rota,200,admin)).data.status,'cancelada');
+    const log = (await req('GET','/api/admin/painel',200,admin)).data.historico.find(l=>l.entidade_id===ordem && l.acao==='ajuste_escopo');
+    assert.equal(log.dados_anteriores.titulo,pedido.titulo);
+    assert.equal(log.dados_posteriores.titulo,'Alterado');
+    assert(log.admin_id && log.criado_em && log.motivo===motivo);
+    const segunda = (await req('POST','/api/ordens',201,cliente.cookie,pedido)).data.id;
+    for(const acao of ['aceitar','iniciar','concluir']) await put('/api/ordens/'+segunda+'/'+acao,{},200,ativo);
+    await req('POST','/api/avaliacoes',403,outro.cookie,{ordem_id:segunda,nota:5});
+    await req('POST','/api/avaliacoes',201,cliente.cookie,{ordem_id:segunda,nota:5});
+    await put(perfil,{visivel:false,motivo});
+    await put(perfil,{visivel:true,motivo});
+    const publico = (await req('GET','/api/prestadores/'+p,200)).data;
+    assert.equal(publico.comentarios.length,1);
+    assert.equal(publico.historicoConcluido.length,1);
+    assert.deepEqual(Object.keys(publico.historicoConcluido[0]).sort(),['cidade','data_conclusao']);
+    assert.equal((await req('GET','/api/contato-administrativo',200)).data.email,'qa@example.test');
+    await req('POST','/api/auth/logout',200,admin);
+    await req('GET','/api/admin/painel',401,admin);
+    console.log('Etapa 3 passou: '+total+' respostas HTTP verificadas e invariantes de auditoria, preservação e privacidade conferidas.');
+  } finally { servidor.kill(); await pool.end(); }
+}
+executar().catch(e=>{console.error(e);process.exitCode=1;});

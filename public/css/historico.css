@@ -1,16 +1,121 @@
 /* =============================================
-   HISTÓRICO (historico.html) — histórico de serviços do cliente
+   HISTÓRICO / ORDENS DO CLIENTE (historico.html)
 ============================================= */
 
-.history-list{ display:flex; flex-direction:column; gap: var(--space-3); }
-.history-item{
-  background:#fff; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
-  padding: var(--space-4) var(--space-5); display:flex; justify-content:space-between;
-  align-items:center; flex-wrap:wrap; gap: var(--space-3);
+.client-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
-.history-item__info h4{ color: var(--secondary); }
-.history-item__info p{ font-size:.85rem; opacity:.85; }
-.status{ padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size:.78rem; font-weight:700; }
-.status--andamento{ background: var(--accent); color: var(--text-strong); }
-.status--concluido{ background: var(--bg-dominant-2); color: var(--text-strong); }
-.status--avaliado{ background: var(--secondary); color: var(--bg-dominant); }
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.order-card {
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--bg-dominant-2);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: transform var(--transition);
+}
+
+.order-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.order-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.order-card__type {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: #f1f5f9;
+  color: #475569;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.order-card__desc {
+  font-size: 0.92rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.order-card__meta {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #64748b;
+  padding-top: var(--space-2);
+  border-top: 1px solid #f1f5f9;
+}
+
+.order-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.order-card__provider-info {
+  font-size: 0.88rem;
+  color: #1e293b;
+}
+
+.order-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* Status Badges */
+.status {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.status--aberta { background: #e0f2fe; color: #0369a1; }
+.status--aguardando_resposta { background: #fef3c7; color: #b45309; }
+.status--aceita { background: #ede9fe; color: #6d28d9; }
+.status--em_andamento { background: #e0e7ff; color: #4338ca; }
+.status--concluido, .status--concluida { background: #dcfce7; color: #15803d; }
+.status--recusada { background: #fee2e2; color: #b91c1c; }
+.status--cancelada { background: #f1f5f9; color: #64748b; text-decoration: line-through; }
+
+.refusal-alert {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  color: #991b1b;
+  margin: 6px 0;
+}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ConectaServiços | Meu Histórico</title>
+<title>ServiçoFácil | Minhas Ordens e Solicitações</title>
 <link rel="stylesheet" href="css/global.css">
 <link rel="stylesheet" href="css/historico.css">
 </head>
@@ -14,28 +14,90 @@
     <a class="logo" href="index.html">📞 Serviços<strong>Facil</strong></a>
     <ul class="nav-links">
       <li><a class="nav-link" href="index.html">Início</a></li>
-      <li><a class="nav-link" href="busca.html">Buscar Serviços</a></li>
-      <li><a class="nav-link active" href="historico.html">Meu Histórico</a></li>
-      <li><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+      <li><a class="nav-link" href="busca.html">Prestadores</a></li>
+      <li hidden data-role="cliente"><a class="nav-link active" href="historico.html">Minhas ordens</a></li>
+      <li hidden data-role="prestador"><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+      <li hidden data-role="admin"><a class="nav-link" href="admin.html">Administração</a></li>
     </ul>
     <div class="auth-actions" id="authArea"></div>
-    <button class="nav-toggle" id="navToggle">☰</button>
+    <button aria-label="Menu de navegação" class="nav-toggle" id="navToggle">☰</button>
   </div>
 </header>
 
 <main class="page">
-  <div class="page-header">
-    <h1>Meu Histórico de Serviços</h1>
-    <p>Acompanhe os serviços que você já solicitou e avalie os prestadores.</p>
+  <div class="client-header-actions">
+    <div class="page-header" style="margin-bottom:0;">
+      <h1>Minhas Ordens de Serviço</h1>
+      <p>Publique necessidades abertas para profissionais ou acompanhe seus pedidos direcionados.</p>
+    </div>
+    <button class="btn btn-accent" id="btnOpenNewOrderModal">+ Publicar Nova Ordem Aberta</button>
   </div>
-  <div class="history-list" id="historyList"></div>
+
+  <label for="statusOrdem">Filtrar por status</label>
+  <select id="statusOrdem">
+    <option value="">Todos</option><option value="aberta">Aberta</option>
+    <option value="aguardando_resposta">Aguardando resposta</option><option value="aceita">Aceita</option>
+    <option value="em_andamento">Em andamento</option><option value="concluida">Concluída</option>
+    <option value="recusada">Recusada</option><option value="cancelada">Cancelada</option>
+  </select>
+  <div class="history-list" id="historyList">
+    <p>Carregando suas ordens de serviço...</p>
+  </div>
 </main>
 
+<!-- MODAL DE CRIAR / EDITAR ORDEM ABERTA -->
+<div class="modal hidden" id="orderModal">
+  <div class="modal__box" style="max-width:520px;">
+    <button class="modal__close" id="closeOrderModal">×</button>
+    <h3 id="orderModalTitle">Publicar Nova Ordem Aberta</h3>
+    <p id="orderHelp" style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">Sua necessidade será publicada no Mural de Oportunidades para prestadores da sua região.</p>
+
+    <form id="orderForm">
+      <input type="hidden" id="orderEditId" value="">
+
+      <label>Título do Serviço / Necessidade *</label>
+      <input type="text" id="orderTitulo" required placeholder="Ex: Conserto de vazamento na pia da cozinha" style="width:100%; margin-bottom:10px;">
+
+      <label>Categoria do Serviço *</label>
+      <input type="text" id="orderCategoria" required placeholder="Ex: Encanador / Hidráulica" style="width:100%; margin-bottom:10px;">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+        <div>
+          <label>Cidade *</label>
+          <select id="orderCidade" required style="width:100%;">
+            <option value="">Selecione</option>
+            <option>Camaquã</option>
+            <option>Sentinela do Sul</option>
+            <option>Tapes</option>
+            <option>Sertão Santana</option>
+          </select>
+        </div>
+        <div>
+          <label>Bairro *</label>
+          <input type="text" id="orderBairro" required placeholder="Ex: Centro, Olaria..." style="width:100%;">
+        </div>
+      </div>
+
+      <label>Período Desejado de Atendimento (Opcional)</label>
+      <input type="text" id="orderPeriodo" placeholder="Ex: Fins de semana, Manhã, Segunda a Quinta" style="width:100%; margin-bottom:10px;">
+
+      <label>Descrição Detalhada do que você precisa *</label>
+      <textarea id="orderDescricao" rows="4" required placeholder="Descreva o problema com clareza para que os profissionais possam avaliar a oportunidade." style="width:100%; margin-bottom:12px;"></textarea>
+
+      <button type="submit" class="btn btn-accent btn-block" id="btnSubmitOrder">Publicar Ordem Aberta</button>
+      <p class="form-msg" id="orderMsg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE AVALIAR SERVIÇO -->
 <div class="modal hidden" id="reviewModal">
   <div class="modal__box">
     <button class="modal__close" id="closeReviewModal">×</button>
-    <h3>Avaliar serviço</h3>
-    <p id="reviewProviderName"></p>
+    <h3>Avaliar Serviço Concluído</h3>
+    <p id="reviewProviderName" style="font-size:0.9rem; color:#475569; margin-bottom:8px;"></p>
+
+    <label style="font-size:0.85rem; font-weight:600;">Sua nota (1 a 5 estrelas) *</label>
     <div class="star-input" id="starInput">
       <span data-value="1">★</span>
       <span data-value="2">★</span>
@@ -43,14 +105,20 @@
       <span data-value="4">★</span>
       <span data-value="5">★</span>
     </div>
-    <textarea id="reviewComment" rows="3" placeholder="Escreva um comentário sobre o serviço..."></textarea>
-    <button class="btn btn-accent btn-block" id="submitReview">Enviar avaliação</button>
+
+    <label style="font-size:0.85rem; font-weight:600;">Comentário sobre o atendimento (Opcional)</label>
+    <textarea id="reviewComment" rows="3" placeholder="Conte como foi o atendimento do profissional..." style="width:100%; margin-bottom:12px;"></textarea>
+
+    <input type="hidden" id="reviewTargetOrderId" value="">
+    <button class="btn btn-accent btn-block" id="submitReview">Enviar Avaliação</button>
   </div>
 </div>
 
 <footer class="site-footer">
-  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL</p>
-  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL | Camaquã • Sentinela do Sul • Tapes • Sertão Santana</p>
+  <p class="note">Plataforma apenas de divulgação e conexão de serviços. Não intermediamos pagamentos.</p>
+  <p class="note" style="margin-top:6px;">Canal de Contato com a Administração: <strong>suporte@servicofacil.com.br</strong></p>
+  <p class="contato-admin">Contato administrativo ainda não informado.</p>
 </footer>
 
 <script src="js/main.js"></script>

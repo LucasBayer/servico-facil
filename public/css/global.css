@@ -191,3 +191,11 @@ button, input, select, textarea{ font: inherit; color: inherit; }
   background: #ffebee;
   color: #c62828;
 }
+
+.auth-actions,.auth-user-group { justify-content:center; align-items:center; }
+.auth-user-group { display:flex; gap:.75rem; max-width:100%; }
+.auth-user-greeting { min-width:0; white-space:normal; }
+.auth-user-greeting,.contato-admin { overflow-wrap:anywhere; }
+.contato-admin { margin-top:.65rem; }
+.contato-admin a { text-decoration:underline; }
+@media(max-width:900px){ .nav-toggle { order:1; } .nav-links,.auth-actions { order:2; } }

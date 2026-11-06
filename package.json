@@ -10,7 +10,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "diagnostico": "node diagnostico-env.js",
-    "test": "node testes_etapa1.js"
+    "test": "node testes_etapa1.js && node testes_etapa2.js",
+    "test:etapa3": "node testes_etapa3.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

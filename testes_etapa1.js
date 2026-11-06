@@ -4,7 +4,7 @@ const path = require('path');
 
 // Importa a aplicação Express configurada no server.js (sem subir na porta 3000 pública)
 // Criaremos um servidor de teste temporário em porta aleatória
-const pool = require('c:\\Users\\Lucas\\OneDrive\\Documents\\ServicoFacil\\Main\\db');
+const pool = require('./db');
 const express = require('express');
 
 // Para testar via HTTP real, vamos carregar o app Express
@@ -19,7 +19,7 @@ async function runTests() {
   process.env.SESSION_SECRET = 'segredo-de-teste-etapa1';
 
   // Inicia o servidor
-  require('c:\\Users\\Lucas\\OneDrive\\Documents\\ServicoFacil\\Main\\server.js');
+  require('./server.js');
 
   // Aguarda 1.5s para o pool e servidor estarem prontos
   await new Promise((r) => setTimeout(r, 1500));

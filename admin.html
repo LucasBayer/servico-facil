@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiçoFácil | Administração</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-container">
+    <a class="logo" href="index.html">📞 Serviços<strong>Facil</strong></a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="index.html">Início</a></li>
+      <li><a class="nav-link" href="busca.html">Prestadores</a></li>
+      <li hidden data-role="cliente"><a class="nav-link" href="historico.html">Minhas ordens</a></li>
+      <li hidden data-role="prestador"><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+      <li hidden data-role="admin"><a class="nav-link active" href="admin.html">Administração</a></li>
+    </ul>
+    <div class="auth-actions" id="authArea"></div>
+    <button aria-label="Menu de navegação" class="nav-toggle" id="navToggle">☰</button>
+  </div>
+</header>
+
+<main class="page admin">
+  <h1>Administração</h1>
+  <p id="resumo"></p>
+  <label for="secao">Consultar</label>
+  <select id="secao"><option value="contas">Contas</option><option value="perfis">Perfis profissionais</option><option value="anuncios">Anúncios</option><option value="pendencias">Ordens pendentes</option><option value="ordens">Todas as ordens</option><option value="historico">Histórico administrativo</option></select>
+  <p id="aviso" role="status"></p><div id="registros"></div>
+  <dialog id="alteracao"><form id="moderar">
+    <h2 id="acaoTitulo"></h2><div id="campos"></div>
+    <label>Motivo<textarea name="motivo" required maxlength="500"></textarea></label>
+    <p id="erroAcao" role="alert"></p>
+    <button type="button" id="fechar" class="btn">Voltar</button>
+    <button class="btn btn-accent">Confirmar</button>
+  </form></dialog>
+</main>
+<footer class="site-footer">
+  <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL | Camaquã • Sentinela do Sul • Tapes • Sertão Santana</p>
+  <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+  <p class="contato-admin">Contato administrativo ainda não informado.</p>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

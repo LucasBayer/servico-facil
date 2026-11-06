@@ -6,6 +6,7 @@
 <title>ServiçoFácil | Área do Prestador</title>
 <link rel="stylesheet" href="css/global.css">
 <link rel="stylesheet" href="css/perfil.css">
+<link rel="stylesheet" href="css/historico.css">
 </head>
 <body>
 
@@ -14,114 +15,189 @@
     <a class="logo" href="index.html">📞 Serviços<strong>Facil</strong></a>
     <ul class="nav-links">
       <li><a class="nav-link" href="index.html">Início</a></li>
-      <li><a class="nav-link" href="busca.html">Buscar Serviços</a></li>
-      <li><a class="nav-link" href="historico.html">Meu Histórico</a></li>
-      <li><a class="nav-link active" href="perfil.html">Área do Prestador</a></li>
+      <li><a class="nav-link" href="busca.html">Prestadores</a></li>
+      <li hidden data-role="cliente"><a class="nav-link" href="historico.html">Minhas ordens</a></li>
+      <li hidden data-role="prestador"><a class="nav-link active" href="perfil.html">Área do Prestador</a></li>
+      <li hidden data-role="admin"><a class="nav-link" href="admin.html">Administração</a></li>
     </ul>
     <div class="auth-actions" id="authArea"></div>
-    <button class="nav-toggle" id="navToggle">☰</button>
+    <button aria-label="Menu de navegação" class="nav-toggle" id="navToggle">☰</button>
   </div>
 </header>
 
 <main class="page">
   <div class="page-header">
-    <h1>Área do Prestador</h1>
-    <p>Gerencie seu perfil profissional e seus anúncios de serviços na plataforma.</p>
+    <h1>Painel do Prestador de Serviço</h1>
+    <p>Oportunidades abertas, pedidos direcionados, atendimentos e gestão dos seus anúncios.</p>
   </div>
 
   <div id="notProviderWarning" class="hidden" style="background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:20px; border-radius:8px; margin-bottom:20px;">
     <h3>Acesso Restrito a Prestadores</h3>
-    <p>Você está conectado com um perfil de <strong>Cliente</strong>. Esta página é reservada para profissionais prestadores divulgarem seus serviços.</p>
+    <p>Você está conectado com um perfil de <strong>Cliente</strong>. Esta página é reservada para profissionais prestadores divulgarem seus serviços e atenderem ordens.</p>
     <p style="margin-top:10px;"><a href="busca.html" class="btn btn-accent">Ver prestadores disponíveis</a> <a href="historico.html" class="btn btn-secondary">Acompanhar minhas solicitações</a></p>
   </div>
 
-  <div class="provider-layout" id="providerMainLayout">
-    <div class="provider-sections">
-      <!-- SEÇÃO 1: PERFIL PROFISSIONAL -->
-      <form class="provider-form" id="myProfileForm">
-        <h3>
-          <span>Meu Perfil Profissional</span>
-          <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Identificação</span>
-        </h3>
-        
-        <label>Nome Completo / Exibição</label>
-        <input type="text" id="profNome" required placeholder="Seu nome profissional">
+  <div id="providerMainLayout">
+    <!-- NAVEGAÇÃO POR ABAS -->
+    <div class="provider-tabs">
+      <button class="provider-tab active" data-tab="tab-oportunidades">
+        🎯 Mural de Oportunidades
+        <span class="tab-badge hidden" id="badgeOportunidades">0</span>
+      </button>
+      <button class="provider-tab" data-tab="tab-direcionados">
+        📬 Pedidos Direcionados
+        <span class="tab-badge hidden" id="badgeDirecionados">0</span>
+      </button>
+      <button class="provider-tab" data-tab="tab-atendimentos">
+        🛠️ Meus Atendimentos
+        <span class="tab-badge hidden" id="badgeAtendimentos">0</span>
+      </button>
+      <button class="provider-tab" data-tab="tab-anuncios">
+        📢 Meus Anúncios & Perfil
+      </button>
+    </div>
 
-        <label>Especialidades Principais</label>
-        <input type="text" id="profEspecialidades" placeholder="Ex: Eletricista, Encanador, Ar Condicionado">
-        <span class="form-hint">Você pode atuar em múltiplas especialidades e categorias.</span>
-
-        <label>Cidade Base</label>
-        <select id="profCidade" required>
-          <option value="">Selecione</option>
+    <!-- ABA 1: MURAL DE OPORTUNIDADES ABERTAS -->
+    <div class="tab-pane active" id="tab-oportunidades">
+      <div class="filter-bar">
+        <input type="text" id="filtroOportunidadeBusca" placeholder="Buscar por palavra-chave..." style="flex:1; min-width:200px;">
+        <select id="filtroOportunidadeCidade">
+          <option value="">Todas as Cidades</option>
           <option>Camaquã</option>
           <option>Sentinela do Sul</option>
           <option>Tapes</option>
           <option>Sertão Santana</option>
         </select>
+        <input type="text" id="filtroOportunidadeCategoria" placeholder="Filtrar por categoria...">
+        <button class="btn btn-secondary" id="btnFiltrarOportunidades">Filtrar</button>
+      </div>
 
-        <label>Telefone / WhatsApp de Contato</label>
-        <input type="text" id="profContato" required placeholder="(51) 9xxxx-xxxx">
-
-        <label>Descrição Profissional / Apresentação</label>
-        <textarea id="profDescricao" rows="3" placeholder="Apresente sua experiência, qualificações e diferenciais."></textarea>
-
-        <button type="submit" class="btn btn-secondary btn-block" style="margin-top:12px;" id="saveProfileBtn">Salvar dados do perfil</button>
-        <p class="form-msg" id="profileMsg"></p>
-      </form>
-
-      <!-- SEÇÃO 2: FORMULÁRIO DE ANÚNCIO (OFERTA) -->
-      <form class="provider-form" id="adForm">
-        <h3 id="adFormTitle">Publicar Novo Anúncio de Serviço</h3>
-
-        <!-- DADOS SOMENTE LEITURA HERDADOS DO PERFIL -->
-        <label>Prestador Responsável (Identificação)</label>
-        <input type="text" id="adPrestadorNome" readonly>
-        <span class="form-hint">Preenchido automaticamente a partir da sua conta. Para alterar, edite seu perfil acima.</span>
-
-        <label>Título do Anúncio *</label>
-        <input type="text" id="adTitulo" required placeholder="Ex: Instalação de tomadas e disjuntores">
-
-        <label>Categoria / Especialidade do Anúncio *</label>
-        <input type="text" id="adCategoria" required placeholder="Ex: Elétrica residencial">
-
-        <label>Região de Atendimento *</label>
-        <input type="text" id="adRegiao" required placeholder="Ex: Camaquã e interior">
-
-        <label>Preço Médio / Estimado (R$)</label>
-        <input type="number" id="adPreco" min="0" placeholder="Ex: 100 (opcional)">
-
-        <label>Descrição Detalhada do Serviço *</label>
-        <textarea id="adDescricao" rows="4" required placeholder="Descreva o que está incluso no serviço, materiais necessários, prazos, etc."></textarea>
-
-        <label>Foto de Referência (URL opcional)</label>
-        <input type="text" id="adFoto" placeholder="https://... (opcional)">
-
-        <input type="hidden" id="adEditId" value="">
-
-        <div style="display:flex; gap:8px; margin-top:16px;">
-          <button type="submit" class="btn btn-accent btn-block" id="adSubmitBtn">Publicar Anúncio</button>
-          <button type="button" class="btn btn-secondary hidden" id="adCancelEditBtn">Cancelar Edição</button>
-        </div>
-        <p class="form-msg" id="adMsg"></p>
-      </form>
+      <div id="oportunidadesGrid" class="cards-grid">
+        <p>Carregando oportunidades abertas...</p>
+      </div>
     </div>
 
-    <!-- SEÇÃO 3: MEUS ANÚNCIOS PUBLICADOS -->
-    <div class="provider-preview">
-      <h3>
-        <span>Meus Anúncios Publicados</span>
-        <span id="adCountBadge" style="font-size:0.85rem; font-weight:normal; color:#64748b;"></span>
-      </h3>
-      <div id="myAdsGrid" class="cards-grid"></div>
+    <!-- ABA 2: PEDIDOS DIRECIONADOS RECEBIDOS -->
+    <div class="tab-pane" id="tab-direcionados">
+      <p style="color:#64748b; margin-bottom:16px;">Clientes que solicitaram atendimento diretamente a partir dos seus anúncios.</p>
+      <div id="pedidosDirecionadosGrid" class="cards-grid">
+        <p>Carregando pedidos direcionados...</p>
+      </div>
+    </div>
+
+    <!-- ABA 3: MEUS ATENDIMENTOS ASSUMIDOS -->
+    <div class="tab-pane" id="tab-atendimentos">
+      <p style="color:#64748b; margin-bottom:16px;">Ordens aceitas sob sua responsabilidade. Inicie o atendimento e informe a conclusão quando terminar.</p>
+      <div id="meusAtendimentosGrid" class="cards-grid">
+        <p>Carregando atendimentos assumidos...</p>
+      </div>
+    </div>
+
+    <!-- ABA 4: GESTÃO DE ANÚNCIOS E PERFIL PROFISSIONAL -->
+    <div class="tab-pane" id="tab-anuncios">
+      <div class="provider-layout">
+        <div class="provider-sections">
+          <!-- PERFIL PROFISSIONAL -->
+          <form class="provider-form" id="myProfileForm">
+            <h3>
+              <span>Meu Perfil Profissional</span>
+              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Identificação</span>
+            </h3>
+
+            <label>Nome Completo / Exibição</label>
+            <input type="text" id="profNome" required placeholder="Seu nome profissional">
+
+            <label>Especialidades Principais</label>
+            <input type="text" id="profEspecialidades" placeholder="Ex: Eletricista, Encanador, Ar Condicionado">
+            <span class="form-hint">Você pode atuar em múltiplas especialidades e categorias.</span>
+
+            <label>Cidade Base</label>
+            <select id="profCidade" required>
+              <option value="">Selecione</option>
+              <option>Camaquã</option>
+              <option>Sentinela do Sul</option>
+              <option>Tapes</option>
+              <option>Sertão Santana</option>
+            </select>
+
+            <label>Telefone / WhatsApp de Contato</label>
+            <input type="text" id="profContato" required placeholder="(51) 9xxxx-xxxx">
+
+            <label>Descrição Profissional / Apresentação</label>
+            <textarea id="profDescricao" rows="3" placeholder="Apresente sua experiência, qualificações e diferenciais."></textarea>
+
+            <button type="submit" class="btn btn-secondary btn-block" style="margin-top:12px;" id="saveProfileBtn">Salvar dados do perfil</button>
+            <p class="form-msg" id="profileMsg"></p>
+          </form>
+
+          <!-- FORMULÁRIO DE ANÚNCIO (OFERTA) -->
+          <form class="provider-form" id="adForm">
+            <h3 id="adFormTitle">Publicar Novo Anúncio de Serviço</h3>
+
+            <label>Prestador Responsável (Identificação)</label>
+            <input type="text" id="adPrestadorNome" readonly>
+            <span class="form-hint">Preenchido automaticamente a partir da sua conta. Para alterar, edite seu perfil acima.</span>
+
+            <label>Título do Anúncio *</label>
+            <input type="text" id="adTitulo" required placeholder="Ex: Instalação de tomadas e disjuntores">
+
+            <label>Categoria / Especialidade do Anúncio *</label>
+            <input type="text" id="adCategoria" required placeholder="Ex: Elétrica residencial">
+
+            <label>Região de Atendimento *</label>
+            <input type="text" id="adRegiao" required placeholder="Ex: Camaquã e interior">
+
+            <label>Preço Médio / Estimado (R$)</label>
+            <input type="number" id="adPreco" min="0" placeholder="Ex: 100 (opcional)">
+
+            <label>Descrição Detalhada do Serviço *</label>
+            <textarea id="adDescricao" rows="4" required placeholder="Descreva o que está incluso no serviço, materiais necessários, prazos, etc."></textarea>
+
+            <label>Foto de Referência (URL opcional)</label>
+            <input type="text" id="adFoto" placeholder="https://... (opcional)">
+
+            <input type="hidden" id="adEditId" value="">
+
+            <div style="display:flex; gap:8px; margin-top:16px;">
+              <button type="submit" class="btn btn-accent btn-block" id="adSubmitBtn">Publicar Anúncio</button>
+              <button type="button" class="btn btn-secondary hidden" id="adCancelEditBtn">Cancelar Edição</button>
+            </div>
+            <p class="form-msg" id="adMsg"></p>
+          </form>
+        </div>
+
+        <div class="provider-preview">
+          <h3>
+            <span>Meus Anúncios Publicados</span>
+            <span id="adCountBadge" style="font-size:0.85rem; font-weight:normal; color:#64748b;"></span>
+          </h3>
+          <div id="myAdsGrid" class="cards-grid"></div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
 
+<!-- MODAL DE RECUSA DE PEDIDO DIRECIONADO -->
+<div class="modal hidden" id="modalRecusa">
+  <div class="modal__box">
+    <button class="modal__close" id="closeRecusaModal">×</button>
+    <h3>Recusar Pedido Direcionado</h3>
+    <p style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">Informe o motivo para que o cliente possa optar por publicar a necessidade como ordem aberta.</p>
+
+    <input type="hidden" id="recusaOrderId" value="">
+    <label>Motivo da Recusa (Opcional)</label>
+    <textarea id="recusaMotivo" rows="3" placeholder="Ex: Indisponibilidade de agenda para a data solicitada..." style="width:100%; margin-bottom:12px;"></textarea>
+
+    <button class="btn btn-secondary btn-block" style="background:#fee2e2; color:#b91c1c; border:none;" id="btnConfirmarRecusa">Confirmar Recusa</button>
+  </div>
+</div>
+
 <footer class="site-footer">
   <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL | Camaquã • Sentinela do Sul • Tapes • Sertão Santana</p>
   <p class="note">Plataforma de conexão e divulgação de serviços comunitários. Não intermediamos pagamentos.</p>
-  <p class="note" style="margin-top:6px;">Canal de Contato com a Administração: <strong>suporte@servicofacil.com.br</strong> • Tel: (51) 98000-0000</p>
+  <p class="note" style="margin-top:6px;">Canal de Contato com a Administração: <strong>suporte@servicofacil.com.br</strong></p>
+  <p class="contato-admin">Contato administrativo ainda não informado.</p>
 </footer>
 
 <script src="js/main.js"></script>

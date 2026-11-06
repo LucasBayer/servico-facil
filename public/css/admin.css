@@ -1,0 +1,8 @@
+.admin { max-width:70rem; margin:auto; padding:1.5rem; }
+.admin article,.admin dialog { background:white; border:1px solid #cad4da; border-radius:.6rem; padding:1rem; margin-block:1rem; overflow-wrap:anywhere; }
+.admin dialog { margin:auto; width:min(90vw,32rem); max-height:85vh; }
+.admin dialog::backdrop { background:#18253399; }
+.admin label,.admin textarea,.admin input { display:block; width:100%; }
+.admin label { margin-block:.65rem; }
+.admin .btn { margin:.3rem .3rem .3rem 0; }
+.admin pre { white-space:pre-wrap; }

@@ -14,12 +14,13 @@
     <a class="logo" href="index.html">📞 Serviços<strong>Facil</strong></a>
     <ul class="nav-links">
       <li><a class="nav-link" href="index.html">Início</a></li>
-      <li><a class="nav-link active" href="busca.html">Buscar Serviços</a></li>
-      <li><a class="nav-link" href="historico.html">Meu Histórico</a></li>
-      <li><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+      <li><a class="nav-link active" href="busca.html">Prestadores</a></li>
+      <li hidden data-role="cliente"><a class="nav-link" href="historico.html">Minhas ordens</a></li>
+      <li hidden data-role="prestador"><a class="nav-link" href="perfil.html">Área do Prestador</a></li>
+      <li hidden data-role="admin"><a class="nav-link" href="admin.html">Administração</a></li>
     </ul>
     <div class="auth-actions" id="authArea"></div>
-    <button class="nav-toggle" id="navToggle">☰</button>
+    <button aria-label="Menu de navegação" class="nav-toggle" id="navToggle">☰</button>
   </div>
 </header>
 
@@ -81,6 +82,7 @@
 <footer class="site-footer">
   <p>ConectaServiços — Projeto de Extensão Universitária | IFSUL</p>
   <p class="note">Plataforma apenas de divulgação de serviços. Não intermediamos pagamentos.</p>
+  <p class="contato-admin">Contato administrativo ainda não informado.</p>
 </footer>
 
 <script src="js/main.js"></script>
